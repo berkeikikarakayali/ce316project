@@ -17,6 +17,7 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
     implementation "org.openjfx:javafx-controls:17.0.10"
     implementation "org.openjfx:javafx-fxml:17.0.10"
+    runtimeOnly 'org.slf4j:slf4j-nop:2.0.13'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
