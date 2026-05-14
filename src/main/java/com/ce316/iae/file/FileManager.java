@@ -1,6 +1,10 @@
 package com.ce316.iae.file;
 
 import com.ce316.iae.model.Submission;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -41,8 +45,22 @@ public class FileManager {
      * @return The absolute path to the found file, or null if not found.
      */
     private String resolveSourceFile(String folder, String fileName) {
-        // TODO: Implement recursive search
-        return null;
+        try {
+            Path startPath = Paths.get(folder);
+            if (!Files.exists(startPath)) {
+                return null;
+            }
+
+            return Files.walk(startPath)
+                    .filter(path -> Files.isRegularFile(path) && path.getFileName().toString().equals(fileName))
+                    .map(Path::toAbsolutePath)
+                    .map(Path::toString)
+                    .findFirst()
+                    .orElse(null);
+        } catch (IOException e) {
+            System.err.println("Error searching for source file: " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -52,7 +70,11 @@ public class FileManager {
      * @return The student ID.
      */
     private String extractStudentId(String zipFile) {
-        // TODO: Implement string manipulation
-        return null;
+        if (zipFile == null) return null;
+        String lowerCaseName = zipFile.toLowerCase();
+        if (lowerCaseName.endsWith(".zip")) {
+            return zipFile.substring(0, zipFile.length() - 4);
+        }
+        return zipFile;
     }
 }
