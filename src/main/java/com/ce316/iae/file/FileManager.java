@@ -1,12 +1,17 @@
 package com.ce316.iae.file;
 
 import com.ce316.iae.model.Submission;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Handles extracting student submissions and locating their source files.
@@ -33,8 +38,48 @@ public class FileManager {
      * @return true if extraction was successful, false otherwise.
      */
     private boolean extractZip(String zipPath, String targetDir) {
-        // TODO: Implement using java.util.zip
-        return false;
+        File destDir = new File(targetDir);
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            return false;
+        }
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath))) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            while (zipEntry != null) {
+                File newFile = new File(destDir, zipEntry.getName());
+                
+                // Protect against Zip Slip
+                String destDirPath = destDir.getCanonicalPath();
+                String destFilePath = newFile.getCanonicalPath();
+                if (!destFilePath.startsWith(destDirPath + File.separator)) {
+                    throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+                }
+
+                if (zipEntry.isDirectory()) {
+                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
+                } else {
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IOException("Failed to create directory " + parent);
+                    }
+                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                        byte[] buffer = new byte[1024];
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zipEntry = zis.getNextEntry();
+            }
+            zis.closeEntry();
+            return true;
+        } catch (IOException e) {
+            System.err.println("Failed to extract " + zipPath + ": " + e.getMessage());
+            return false;
+        }
     }
 
     /**
