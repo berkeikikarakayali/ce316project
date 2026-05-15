@@ -152,10 +152,9 @@ public class Executioner {
 
         //comparing
         ComparisonResult cmpResult = comparisonService.compare(actualOutput, expectedOutput, normMode);
-        String status = cmpResult.getStatus().name();
-        System.out.println("  Result: " + status);
+        System.out.println("  Result: " + cmpResult.getStatus().name());
 
-        reportingService.addReport(sub.getStudentId(), status, actualOutput, enforcer.getError(), normMode);
+        reportingService.addReport(sub.getStudentId(), cmpResult, enforcer.getError(), normMode);
     }
 
     // utility

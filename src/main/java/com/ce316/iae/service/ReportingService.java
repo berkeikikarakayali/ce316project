@@ -2,6 +2,7 @@ package com.ce316.iae.service;
 
 import com.ce316.iae.dao.EvaluationResultDAO;
 import com.ce316.iae.model.AssignmentReport;
+import com.ce316.iae.model.ComparisonResult;
 import com.ce316.iae.model.ComparisonStatus;
 import com.ce316.iae.model.NormalizationMode;
 import com.ce316.iae.model.StudentReport;
@@ -40,6 +41,26 @@ public class ReportingService {
         }
 
         report.setTimestamp(Instant.now().toString());
+
+        reports.add(report);
+    }
+
+    public void addReport(String studentId, ComparisonResult result, String errorMessage,
+                          String normalizationMode) {
+        StudentReport report = new StudentReport();
+        report.setStudentId(studentId);
+        report.setStatus(result.getStatus());
+        report.setActualOutput(result.getActualOutput());
+        report.setExpectedOutput(result.getExpectedOutput());
+        report.setDiffLines(result.getDiffLines());
+        report.setErrorMessage(errorMessage);
+        report.setTimestamp(Instant.now().toString());
+
+        try {
+            report.setNormalizationMode(NormalizationMode.valueOf(normalizationMode));
+        } catch (IllegalArgumentException e) {
+            report.setNormalizationMode(null);
+        }
 
         reports.add(report);
     }
