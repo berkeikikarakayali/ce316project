@@ -1,10 +1,10 @@
 package com.ce316.iae.engine;
 
-import model.Submission;
-import model.LanguageConfig;
-import service.ConfigurationService;
-import service.ComparisonService;
-import service.ReportingService;
+import com.ce316.iae.model.LanguageConfig;
+import com.ce316.iae.model.Submission;
+import com.ce316.iae.service.ComparisonService;
+import com.ce316.iae.service.ConfigurationService;
+import com.ce316.iae.service.ReportingService;
 
 import java.util.List;
 
@@ -56,12 +56,12 @@ public class Executioner {
         System.out.println("Execution Engine started: " + submissions.size() + " student\n");
 
         for (Submission sub : submissions) {
-            System.out.println("Processing: " + sub.studentId );
+            System.out.println("Processing: " + sub.getStudentId() );
             try {
                 processSingle(sub, expectedOutput, runArgs, compileTimeout, runTimeout, normMode);
             } catch (Exception e) {
-                System.err.println("[ERROR] " + sub.studentId + ": " + e.getMessage());
-                reportingService.addReport(sub.studentId, "ERROR", "", e.getMessage(), normMode);
+                System.err.println("[ERROR] " + sub.getStudentId() + ": " + e.getMessage());
+                reportingService.addReport(sub.getStudentId(), "ERROR", "", e.getMessage(), normMode);
             }
         }
 
@@ -77,34 +77,34 @@ public class Executioner {
                                String normMode) {
 
         LanguageConfig config = configService.getConfig();
-        engine.Enforcer enforcer = new engine.Enforcer();
+        Enforcer enforcer = new Enforcer();
 
         // compiling
         if (config.hasCompileStep()) {
             List<String> compileCmd = config.buildCompileCommand(
-                    sub.mainSourceFile,
-                    sub.extractedFolderPath
+                    sub.getMainSourceFile(),
+                    sub.getExtractedFolderPath()
             );
 
             System.out.println("  Compiling: " + String.join(" ", compileCmd));
-            enforcer.execute(compileCmd, sub.extractedFolderPath, compileTimeout);
+            enforcer.execute(compileCmd, sub.getExtractedFolderPath(), compileTimeout);
 
             if (enforcer.getExitCode() == -1 && !enforcer.didTimeout()) {
                 String msg = buildMissingToolMessage(config.getCompilerPath(), enforcer.getError());
                 System.out.println("  [ERROR] " + msg);
-                reportingService.addReport(sub.studentId, "ERROR", "", msg, normMode);
+                reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
                 return;
             }
 
             if (enforcer.didTimeout()) {
                 System.out.println("  [TIMEOUT] The compilation has timed out.");
-                reportingService.addReport(sub.studentId, "TIMEOUT", "", "Compiling timeout.", normMode);
+                reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", "Compiling timeout.", normMode);
                 return;
             }
 
             if (enforcer.getExitCode() != 0) {
                 System.out.println("  [COMPILE_ERROR] " + enforcer.getError().trim());
-                reportingService.addReport(sub.studentId, "COMPILE_ERROR", "", enforcer.getError(), normMode);
+                reportingService.addReport(sub.getStudentId(), "COMPILE_ERROR", "", enforcer.getError(), normMode);
                 return;
             }
 
@@ -115,24 +115,25 @@ public class Executioner {
 
         //running
         List<String> runCmd = config.buildRunCommand(
-                sub.extractedFolderPath,
+                sub.getMainSourceFile(),
+                sub.getExtractedFolderPath(),
                 runArgs
         );
 
         System.out.println("  Running: " + String.join(" ", runCmd));
-        enforcer.execute(runCmd, sub.extractedFolderPath, runTimeout);
+        enforcer.execute(runCmd, sub.getExtractedFolderPath(), runTimeout);
 
         if (enforcer.getExitCode() == -1 && !enforcer.didTimeout()) {
             String toolName = runCmd.isEmpty() ? "?" : runCmd.get(0);
             String msg = buildMissingToolMessage(toolName, enforcer.getError());
             System.out.println("  [ERROR] " + msg);
-            reportingService.addReport(sub.studentId, "ERROR", "", msg, normMode);
+            reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
             return;
         }
 
         if (enforcer.didTimeout()) {
             System.out.println("  [TIMEOUT] The operation timed out. ");
-            reportingService.addReport(sub.studentId, "TIMEOUT", "", " Operation timeout.", normMode);
+            reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", " Operation timeout.", normMode);
             return;
         }
 
@@ -140,7 +141,7 @@ public class Executioner {
             String crashMsg = "Program crashed (exit code " + enforcer.getExitCode() + "). "
                     + enforcer.getError().trim();
             System.out.println("  [CRASH→FAIL] " + crashMsg);
-            reportingService.addReport(sub.studentId, "FAIL",
+            reportingService.addReport(sub.getStudentId(), "FAIL",
                     enforcer.getOutput(), crashMsg, normMode);
             return;
         }
@@ -152,7 +153,7 @@ public class Executioner {
         String status = comparisonService.compare(actualOutput, expectedOutput, normMode);
         System.out.println("  Result: " + status);
 
-        reportingService.addReport(sub.studentId, status, actualOutput, enforcer.getError(), normMode);
+        reportingService.addReport(sub.getStudentId(), status, actualOutput, enforcer.getError(), normMode);
     }
 
     // utility
@@ -202,20 +203,20 @@ public class Executioner {
         LanguageConfig config = configService.getConfig();
         if (!config.hasCompileStep()) return true;
 
-        engine.Enforcer enforcer = new engine.Enforcer();
-        List<String> cmd = config.buildCompileCommand(sub.mainSourceFile, sub.extractedFolderPath);
-        enforcer.execute(cmd, sub.extractedFolderPath, compileTimeout);
+        Enforcer enforcer = new Enforcer();
+        List<String> cmd = config.buildCompileCommand(sub.getMainSourceFile(), sub.getExtractedFolderPath());
+        enforcer.execute(cmd, sub.getExtractedFolderPath(), compileTimeout);
         return !enforcer.didTimeout() && enforcer.getExitCode() == 0;
     }
 
-    public engine.Executed run(Submission sub, String runArgs, int runTimeout) {
+    public Executed run(Submission sub, String runArgs, int runTimeout) {
         LanguageConfig config = configService.getConfig();
-        engine.Enforcer enforcer = new engine.Enforcer();
+        Enforcer enforcer = new Enforcer();
 
-        List<String> cmd = config.buildRunCommand(sub.extractedFolderPath, runArgs);
-        enforcer.execute(cmd, sub.extractedFolderPath, runTimeout);
+        List<String> cmd = config.buildRunCommand(sub.getMainSourceFile(), sub.getExtractedFolderPath(), runArgs);
+        enforcer.execute(cmd, sub.getExtractedFolderPath(), runTimeout);
 
-        engine.Executed result = new engine.Executed();
+        Executed result = new Executed();
         result.compSuccess = true;
         result.runSuccess  = (enforcer.getExitCode() == 0);
         result.output      = enforcer.getOutput();
