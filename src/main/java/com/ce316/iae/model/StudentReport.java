@@ -6,6 +6,7 @@ import java.util.List;
 public class StudentReport {
     private Integer id;
     private Integer studentSubmissionId;
+    private String studentId;
     private ComparisonStatus status;
     private String actualOutput;
     private String expectedOutput;
@@ -23,6 +24,9 @@ public class StudentReport {
 
     public Integer getStudentSubmissionId() { return studentSubmissionId; }
     public void setStudentSubmissionId(Integer studentSubmissionId) { this.studentSubmissionId = studentSubmissionId; }
+
+    public String getStudentId() { return studentId; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
 
     public ComparisonStatus getStatus() { return status; }
     public void setStatus(ComparisonStatus status) { this.status = status; }
@@ -46,4 +50,29 @@ public class StudentReport {
 
     public String getTimestamp() { return timestamp; }
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+
+    public String toCSVRow() {
+        String preview = actualOutput != null
+                ? actualOutput.replace("\n", " ").replace("\r", "")
+                : "";
+        if (preview.length() > 100) preview = preview.substring(0, 100) + "...";
+
+        return String.join(",",
+                csvEscape(studentId),
+                csvEscape(status != null ? status.name() : ""),
+                csvEscape(normalizationMode != null ? normalizationMode.name() : ""),
+                csvEscape(timestamp),
+                csvEscape(errorMessage),
+                csvEscape(preview),
+                String.valueOf(diffLines != null ? diffLines.size() : 0)
+        );
+    }
+
+    private String csvEscape(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
 }
