@@ -1,5 +1,6 @@
 package com.ce316.iae.engine;
 
+import com.ce316.iae.model.ComparisonResult;
 import com.ce316.iae.model.LanguageConfig;
 import com.ce316.iae.model.Submission;
 import com.ce316.iae.service.ComparisonService;
@@ -150,7 +151,8 @@ public class Executioner {
         System.out.println("  Output: " + actualOutput.trim());
 
         //comparing
-        String status = comparisonService.compare(actualOutput, expectedOutput, normMode);
+        ComparisonResult cmpResult = comparisonService.compare(actualOutput, expectedOutput, normMode);
+        String status = cmpResult.getStatus().name();
         System.out.println("  Result: " + status);
 
         reportingService.addReport(sub.getStudentId(), status, actualOutput, enforcer.getError(), normMode);
