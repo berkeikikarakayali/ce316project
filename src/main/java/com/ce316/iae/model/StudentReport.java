@@ -62,10 +62,20 @@ public class StudentReport {
                 csvEscape(status != null ? status.name() : ""),
                 csvEscape(normalizationMode != null ? normalizationMode.name() : ""),
                 csvEscape(timestamp),
-                csvEscape(errorMessage),
+                csvEscape(cleanError(errorMessage)),
                 csvEscape(preview),
                 String.valueOf(diffLines != null ? diffLines.size() : 0)
         );
+    }
+
+    private String cleanError(String error) {
+        if (error == null || error.isBlank()) return "";
+        String[] lines = error.trim().split("\\r?\\n");
+        if (lines.length == 1) return lines[0];
+        // first sentence + last line (the actual exception)
+        String firstSentence = lines[0].split("\\.")[0];
+        String lastLine = lines[lines.length - 1].trim();
+        return firstSentence + ". " + lastLine;
     }
 
     private String csvEscape(String value) {
