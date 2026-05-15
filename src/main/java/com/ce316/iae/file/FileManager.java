@@ -26,8 +26,41 @@ public class FileManager {
      * @return A list of valid Submission objects.
      */
     public List<Submission> prepareSubmissions(String zipDirectory, String sourceFileName) {
-        // TODO: Implement main processing loop
-        return new ArrayList<>();
+        List<Submission> submissions = new ArrayList<>();
+        Path dirPath = Paths.get(zipDirectory);
+
+        if (!Files.exists(dirPath) || !Files.isDirectory(dirPath)) {
+            System.err.println("Invalid ZIP directory: " + zipDirectory);
+            return submissions;
+        }
+
+        try {
+            Files.list(dirPath)
+                .filter(path -> path.toString().toLowerCase().endsWith(".zip"))
+                .forEach(zipFile -> {
+                    String studentId = extractStudentId(zipFile.getFileName().toString());
+                    // Extract into a subfolder named "extracted/<studentId>" to keep things clean
+                    String targetFolder = Paths.get(zipDirectory, "extracted", studentId).toString();
+
+                    boolean extractionSuccess = extractZip(zipFile.toString(), targetFolder);
+                    if (!extractionSuccess) {
+                        System.err.println("Failed to extract: " + zipFile.toString());
+                        return; // Move to the next student
+                    }
+
+                    String mainFile = resolveSourceFile(targetFolder, sourceFileName);
+                    if (mainFile == null) {
+                        System.err.println("Source file not found for: " + zipFile.toString());
+                        return; // Move to the next student
+                    }
+
+                    submissions.add(new Submission(studentId, zipFile.toString(), targetFolder, mainFile));
+                });
+        } catch (IOException e) {
+            System.err.println("Error reading ZIP directory: " + e.getMessage());
+        }
+
+        return submissions;
     }
 
     /**
