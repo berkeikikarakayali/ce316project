@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public final class SchemaInitializer {
 
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
     private static final String SCHEMA_RESOURCE = "/db/schema.sql";
 
     private SchemaInitializer() {}

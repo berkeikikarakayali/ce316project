@@ -84,6 +84,39 @@ public class EvaluationResultDAO {
         return out;
     }
 
+    /**
+     * Same rows as {@link #findAll()}, plus {@link StudentReport#setStudentId(String)}
+     * resolved via {@code STUDENT_SUBMISSION}.
+     */
+    public List<StudentReport> findAllJoinedWithStudent() throws SQLException {
+        String sql = "SELECT er.id, er.student_submission_id, ss.student_id, er.status, er.actual_output, " +
+                     "er.expected_output, er.diff_lines, er.error_message, er.normalization_mode, er.timestamp " +
+                     "FROM EVALUATION_RESULT er " +
+                     "JOIN STUDENT_SUBMISSION ss ON ss.id = er.student_submission_id " +
+                     "ORDER BY ss.student_id, er.id";
+        List<StudentReport> out = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                StudentReport r = new StudentReport();
+                r.setId(rs.getInt("id"));
+                int subId = rs.getInt("student_submission_id");
+                r.setStudentSubmissionId(rs.wasNull() ? null : subId);
+                r.setStudentId(rs.getString("student_id"));
+                r.setStatus(ComparisonStatus.valueOf(rs.getString("status")));
+                r.setActualOutput(rs.getString("actual_output"));
+                r.setExpectedOutput(rs.getString("expected_output"));
+                r.setDiffLines(JsonArrayCodec.decode(rs.getString("diff_lines")));
+                r.setErrorMessage(rs.getString("error_message"));
+                String nm = rs.getString("normalization_mode");
+                r.setNormalizationMode(nm != null ? NormalizationMode.valueOf(nm) : null);
+                r.setTimestamp(rs.getString("timestamp"));
+                out.add(r);
+            }
+        }
+        return out;
+    }
+
     public void deleteAll() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("DELETE FROM EVALUATION_RESULT");

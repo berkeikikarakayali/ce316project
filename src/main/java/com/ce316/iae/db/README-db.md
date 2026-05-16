@@ -6,16 +6,10 @@ Requirements covered: **Req 3** (create project with a configuration), **Req 10*
 
 ## TL;DR for teammates
 
-You do **not** open a `Connection` yourself. You ask `Controller` for the
-relevant DAO, which has already been constructed against the currently
-open `.iae` file. Concretely:
+You do **not** open a `Connection` yourself from random helper classes — construct DAOs against the **currently open** `.iae` via `DatabaseService.connection()`, typically from `App` or a controller façade.
 
-- **Kuzey (Configuration Manager)** — wire `ConfigurationService.loadFromProject()` /
-  `saveToProject()` to `ConfigurationDAO.findAll()` / `insert()` / `update()` / `delete()`.
-- **Arda (File & Directory Manager)** — after `FileManager.prepareSubmissions()`
-  returns its `List<Submission>`, call `StudentSubmissionDAO.deleteAll()` + `insertAll(list)`.
-  The DAO fills in the auto-generated `id` on each `Submission` so you can pass them
-  on to the Execution Engine.
+- **Kuzey (Configuration Manager)** — use `ConfigurationService.reloadFromDb()`, `upsert()`, `delete()`, and `ImportExportService` backed by `ConfigurationDAO`.
+- **Arda (File & Directory Manager)** — after `FileManager.prepareSubmissions()` returns its `List<Submission>`, call `StudentSubmissionDAO.deleteAll()` + `insertAll(list)`.
 - **Fatih (Execution Engine)** — does not touch the database directly. You receive
   `Submission` objects (id already set) and hand `StudentReport` objects to Berke.
 - **Berke (Evaluation & Reporting)** — wire `ReportingService.saveToProject()` to
@@ -51,10 +45,7 @@ EvaluationResultDAO  resDao = new EvaluationResultDAO(db.connection());
 
 ## Schema
 
-See [schema.sql](../../../../resources/db/schema.sql). Four tables, exactly as
-specified in design doc §2.1, plus an internal `meta` table holding the
-`schema_version` row. Foreign keys are enabled (`PRAGMA foreign_keys = ON`)
-on every open. `EVALUATION_RESULT.student_submission_id` cascades on delete.
+See [schema.sql](../../../../resources/db/schema.sql). Tables align with design doc §2.1 plus internal `meta.schema_version` (**currently version 2**, adding `PROJECT.zip_folder_path` and `PROJECT.main_source_filename`). Foreign keys are enabled (`PRAGMA foreign_keys = ON`) on every open. `EVALUATION_RESULT.student_submission_id` cascades on delete.
 
 ## Model class ownership
 

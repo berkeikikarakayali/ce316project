@@ -4,6 +4,10 @@ public class Project {
     private String name;
     private Integer configurationId;
     private String expectedOutputPath;
+    /** Folder containing student ZIP archives (batch extraction runs here). */
+    private String zipFolderPath;
+    /** Preferred source file name inside each extraction (e.g. main.c); optional — inferred from extension when blank. */
+    private String mainSourceFilename;
     private String runArgs;
     private int compileTimeoutSec = 60;
     private int runTimeoutSec = 30;
@@ -17,6 +21,12 @@ public class Project {
 
     public String getExpectedOutputPath() { return expectedOutputPath; }
     public void setExpectedOutputPath(String expectedOutputPath) { this.expectedOutputPath = expectedOutputPath; }
+
+    public String getZipFolderPath() { return zipFolderPath; }
+    public void setZipFolderPath(String zipFolderPath) { this.zipFolderPath = zipFolderPath; }
+
+    public String getMainSourceFilename() { return mainSourceFilename; }
+    public void setMainSourceFilename(String mainSourceFilename) { this.mainSourceFilename = mainSourceFilename; }
 
     public String getRunArgs() { return runArgs; }
     public void setRunArgs(String runArgs) { this.runArgs = runArgs; }

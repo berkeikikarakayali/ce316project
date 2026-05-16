@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS PROJECT (
     name                 TEXT,
     configuration_id     INTEGER,
     expected_output_path TEXT,
+    zip_folder_path      TEXT,
+    main_source_filename TEXT,
     run_args             TEXT,
     compile_timeout_sec  INTEGER NOT NULL DEFAULT 60,
     run_timeout_sec      INTEGER NOT NULL DEFAULT 30,

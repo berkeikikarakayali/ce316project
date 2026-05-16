@@ -77,13 +77,15 @@ class DaoRoundTripTest {
         ConfigurationDAO cfgDao = new ConfigurationDAO(service.connection());
         int cfgId = cfgDao.insert(new LanguageConfig(
                 "C", "c", "/usr/bin/gcc",
-                Arrays.asList("-O2"), Arrays.asList()));
+                Arrays.asList("-O2"), Arrays.asList("./main")));
 
         ProjectDAO dao = new ProjectDAO(service.connection());
         Project p = dao.loadProject();
         p.setName("HW1 Sorting");
         p.setConfigurationId(cfgId);
         p.setExpectedOutputPath("C:/expected.txt");
+        p.setZipFolderPath("D:/subs/zips");
+        p.setMainSourceFilename("main.c");
         p.setRunArgs("--input case1");
         p.setCompileTimeoutSec(120);
         p.setRunTimeoutSec(45);
@@ -94,6 +96,8 @@ class DaoRoundTripTest {
         assertEquals("HW1 Sorting", reloaded.getName());
         assertEquals(cfgId, reloaded.getConfigurationId());
         assertEquals("C:/expected.txt", reloaded.getExpectedOutputPath());
+        assertEquals("D:/subs/zips", reloaded.getZipFolderPath());
+        assertEquals("main.c", reloaded.getMainSourceFilename());
         assertEquals("--input case1", reloaded.getRunArgs());
         assertEquals(120, reloaded.getCompileTimeoutSec());
         assertEquals(45, reloaded.getRunTimeoutSec());

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>IAE User Manual</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.45; max-width: 900px; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+    h1,h2 { color: #222; }
+  </style>
+</head>
+<body>
+<h1>Integrated Assignment Environment (IAE)</h1>
+<p>
+  The IAE helps lecturers evaluate batches of student ZIP submissions locally.
+  Each assignment lives in a single SQLite project file (<code>.iae</code>). No database server is required.
+</p>
+
+<h2>1. Workflow</h2>
+<ol>
+  <li>Create reusable <strong>language configurations</strong> (compiler/interpreter paths + arguments).</li>
+  <li>Create/open a <strong>project</strong> (wizard tab) selecting configuration, ZIP folder, expected output file, argv extras, timeouts, normalization.</li>
+  <li>Place student archives named <code>&lt;studentId&gt;.zip</code> inside the ZIP folder.</li>
+  <li>Choose <strong>Run → Execute assignment</strong>. The tool extracts archives with pure Java ZIP APIs,
+      compiles/runs each submission, compares stdout with your expected output file, and persists reports.</li>
+  <li>Open results anytime via <strong>File → Open project</strong>.</li>
+</ol>
+
+<h2>2. Configuration placeholders</h2>
+<p>
+  Compile/run argument templates support tokens:
+</p>
+<ul>
+  <li><code>{SRC}</code> — absolute path to the discovered student source file.</li>
+  <li><code>{DIR}</code> — absolute working directory for the extracted submission.</li>
+  <li><code>{BASE}</code> — filename portion of the student source.</li>
+</ul>
+<p>
+  Example C workflow:
+</p>
+<pre><code>compiler_path = /usr/bin/gcc
+compile_args  = ["-o","main","{SRC}"]
+run_args      = ["./main"]
+</code></pre>
+
+<h2>3. Project argv extras</h2>
+<p>
+  Extra arguments appended after configuration run tokens support JSON arrays such as
+  <code>["red","blue"]</code> or legacy whitespace-separated tokens like <code>case1 case2</code>.
+</p>
+
+<h2>4. Normalization modes</h2>
+<ul>
+  <li><strong>STRICT</strong> — unify CRLF/LF then compare verbatim.</li>
+  <li><strong>TRIM_WHITESPACE</strong> — trim each line before comparing.</li>
+  <li><strong>CASE_INSENSITIVE</strong> — trim lines then lowercase entire buffers.</li>
+</ul>
+
+<h2>5. Packaging</h2>
+<p>
+  Bundle JavaFX via <code>jpackage</code> on Windows and wrap the output folder with Inno Setup to satisfy course installer requirements.
+  Keep lecturers’ <code>.iae</code> databases outside Program Files so uninstall does not erase grading history.
+</p>
+</body>
+</html>
