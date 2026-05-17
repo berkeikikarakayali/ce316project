@@ -20,10 +20,15 @@ public class ReportingService {
 
     private final List<StudentReport> reports = new ArrayList<>();
 
-    public void addReport(String studentId, String status, String actualOutput,
+    public void clearReports() {
+        reports.clear();
+    }
+
+    public void addReport(Integer studentSubmissionId, String studentId, String status, String actualOutput,
                           String errorMessage, String normalizationMode) {
 
         StudentReport report = new StudentReport();
+        report.setStudentSubmissionId(studentSubmissionId);
         report.setStudentId(studentId);
         report.setActualOutput(actualOutput);
         report.setErrorMessage(errorMessage);
@@ -45,9 +50,10 @@ public class ReportingService {
         reports.add(report);
     }
 
-    public void addReport(String studentId, ComparisonResult result, String errorMessage,
+    public void addReport(Integer studentSubmissionId, String studentId, ComparisonResult result, String errorMessage,
                           String normalizationMode) {
         StudentReport report = new StudentReport();
+        report.setStudentSubmissionId(studentSubmissionId);
         report.setStudentId(studentId);
         report.setStatus(result.getStatus());
         report.setActualOutput(result.getActualOutput());

@@ -1,23 +1,30 @@
 package com.ce316.iae;
 
+import com.ce316.iae.controller.MainController;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.net.URL;
+import java.util.Objects;
+
 /**
- * JavaFX entry point. Real UI shell is owned by the UI & Deployment module —
- * this is a stub so the application plugin has a main class and so we can
- * verify the build end-to-end.
+ * JavaFX entry point — loads the main shell ({@link MainController}).
  */
 public class App extends Application {
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws Exception {
+        URL url = Objects.requireNonNull(App.class.getResource("/fxml/MainView.fxml"),
+                "FXML bundle missing: /fxml/MainView.fxml");
+        FXMLLoader loader = new FXMLLoader(url);
+        Scene scene = new Scene(loader.load(), 980, 680);
+        MainController controller = loader.getController();
+        controller.setPrimaryStage(stage);
+
         stage.setTitle("Integrated Assignment Environment");
-        stage.setScene(new Scene(new StackPane(
-                new Label("IAE — UI shell pending (owned by UI & Deployment)")), 480, 240));
+        stage.setScene(scene);
         stage.show();
     }
 

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ce316.iae.controller.MainController" prefHeight="680.0" prefWidth="980.0">
+    <top>
+        <VBox spacing="0.0">
+            <MenuBar>
+                <Menu mnemonicParsing="false" text="File">
+                    <MenuItem mnemonicParsing="false" onAction="#onNewProject" text="New Project…"/>
+                    <MenuItem mnemonicParsing="false" onAction="#onOpenProject" text="Open Project…"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem mnemonicParsing="false" onAction="#onSaveProject" text="Save Project"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem mnemonicParsing="false" onAction="#onExit" text="Exit"/>
+                </Menu>
+            </MenuBar>
+            <HBox spacing="12.0" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets bottom="8.0" left="12.0" right="12.0" top="8.0"/>
+                </padding>
+                <Label text="Project:"/>
+                <Label fx:id="projectPathLabel" text="(no project open)" style="-fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+            <Tab text="Configurations">
+                <VBox spacing="10.0">
+                    <padding>
+                        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0"/>
+                    </padding>
+                    <Label wrapText="true" text="Create, edit, or remove language configurations used by assignments (Requirement 4)."/>
+                    <HBox spacing="8.0">
+                        <Button mnemonicParsing="false" onAction="#onAddConfiguration" text="Add"/>
+                        <Button mnemonicParsing="false" onAction="#onEditConfiguration" text="Edit"/>
+                        <Button mnemonicParsing="false" onAction="#onDeleteConfiguration" text="Remove"/>
+                    </HBox>
+                    <ListView fx:id="configurationListView" prefHeight="420.0" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </Tab>
+            <Tab text="Assignment">
+                <ScrollPane fitToWidth="true">
+                    <VBox spacing="10.0">
+                        <padding>
+                            <Insets bottom="16.0" left="12.0" right="12.0" top="12.0"/>
+                        </padding>
+                        <Label wrapText="true" text="Bind project settings and run batch evaluation (Requirements 3, 7, 8). Save the project before leaving."/>
+                        <GridPane hgap="10.0" vgap="10.0">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="140.0" prefWidth="160.0"/>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="200.0"/>
+                            </columnConstraints>
+                            <Label text="Project name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="projectNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="Active configuration:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <ComboBox fx:id="activeConfigCombo" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label text="Expected output file:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <TextField fx:id="expectedOutputField" HBox.hgrow="ALWAYS"/>
+                                <Button mnemonicParsing="false" onAction="#onBrowseExpectedOutput" text="Browse…"/>
+                            </HBox>
+                            <Label text="Run arguments:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="runArgsField" promptText="extra arguments appended after configured run command"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="Normalization:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <ComboBox fx:id="normalizationCombo" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label text="Compile timeout (s):" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <Spinner fx:id="compileTimeoutSpinner" editable="true" prefWidth="120.0"
+                                     GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            <Label text="Run timeout (s):" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                            <Spinner fx:id="runTimeoutSpinner" editable="true" prefWidth="120.0"
+                                     GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                            <Separator GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                            <Label text="ZIP directory:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                            <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                <TextField fx:id="zipDirectoryField" HBox.hgrow="ALWAYS"/>
+                                <Button mnemonicParsing="false" onAction="#onBrowseZipDirectory" text="Browse…"/>
+                            </HBox>
+                            <Label text="Main source file:" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+                            <TextField fx:id="sourceFileNameField" promptText="e.g. main.c" text="main.c"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+                        </GridPane>
+                        <HBox spacing="12.0" alignment="CENTER_LEFT">
+                            <Button fx:id="runEvaluationButton" mnemonicParsing="false" onAction="#onRunEvaluation"
+                                    text="Run evaluation"/>
+                            <ProgressIndicator fx:id="runProgressIndicator" maxHeight="28.0" maxWidth="28.0"
+                                               prefHeight="28.0" prefWidth="28.0" visible="false"/>
+                            <Label fx:id="assignmentHintLabel" wrapText="true" style="-fx-text-fill: gray;"
+                                   text="Processes every .zip in the folder (not one-by-one). Results are stored in the project file."/>
+                        </HBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+            <Tab fx:id="resultsTab" text="Results">
+                <VBox spacing="10.0">
+                    <padding>
+                        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0"/>
+                    </padding>
+                    <Label fx:id="resultsSummaryLabel" text="Run an evaluation or open a saved project to load results." wrapText="true"/>
+                    <HBox spacing="8.0">
+                        <Button mnemonicParsing="false" onAction="#onExportCsv" text="Export CSV…"/>
+                    </HBox>
+                    <TableView fx:id="resultsTableView" prefHeight="460.0" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

@@ -61,7 +61,7 @@ public class Executioner {
                 processSingle(sub, expectedOutput, runArgs, compileTimeout, runTimeout, normMode);
             } catch (Exception e) {
                 // (dev log) System.err.println("[ERROR] " + sub.getStudentId() + ": " + e.getMessage());
-                reportingService.addReport(sub.getStudentId(), "ERROR", "", e.getMessage(), normMode);
+                reportingService.addReport(sub.getId(), sub.getStudentId(), "ERROR", "", e.getMessage(), normMode);
             }
         }
 
@@ -92,19 +92,19 @@ public class Executioner {
             if (enforcer.getExitCode() == -1 && !enforcer.didTimeout()) {
                 String msg = buildMissingToolMessage(config.getCompilerPath(), enforcer.getError());
                 // (dev log) System.out.println("err" + msg);
-                reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
+                reportingService.addReport(sub.getId(), sub.getStudentId(), "ERROR", "", msg, normMode);
                 return;
             }
 
             if (enforcer.didTimeout()) {
                 // (dev log) System.out.println("Compilation timed out.");
-                reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", "Compilation timed out.", normMode);
+                reportingService.addReport(sub.getId(), sub.getStudentId(), "TIMEOUT", "", "Compilation timed out.", normMode);
                 return;
             }
 
             if (enforcer.getExitCode() != 0) {
                 // (dev log) System.out.println("compile err " + enforcer.getError().trim());
-                reportingService.addReport(sub.getStudentId(), "COMPILE_ERROR", "", enforcer.getError(), normMode);
+                reportingService.addReport(sub.getId(), sub.getStudentId(), "COMPILE_ERROR", "", enforcer.getError(), normMode);
                 return;
             }
 
@@ -127,13 +127,13 @@ public class Executioner {
             String toolName = runCmd.isEmpty() ? "?" : runCmd.get(0);
             String msg = buildMissingToolMessage(toolName, enforcer.getError());
             // (dev log) System.out.println("err " + msg);
-            reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
+            reportingService.addReport(sub.getId(), sub.getStudentId(), "ERROR", "", msg, normMode);
             return;
         }
 
         if (enforcer.didTimeout()) {
             // (dev log) System.out.println("Execution timed out.");
-            reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", "Execution timed out.", normMode);
+            reportingService.addReport(sub.getId(), sub.getStudentId(), "TIMEOUT", "", "Execution timed out.", normMode);
             return;
         }
 
@@ -141,7 +141,7 @@ public class Executioner {
             String crashMsg = "Program crashed (exit code " + enforcer.getExitCode() + "). "
                     + enforcer.getError().trim();
             // (dev log) System.out.println("[CRASH→FAIL] " + crashMsg);
-            reportingService.addReport(sub.getStudentId(), "FAIL",
+            reportingService.addReport(sub.getId(), sub.getStudentId(), "FAIL",
                     enforcer.getOutput(), crashMsg, normMode);
             return;
         }
@@ -153,7 +153,7 @@ public class Executioner {
         ComparisonResult cmpResult = comparisonService.compare(actualOutput, expectedOutput, normMode);
         // (dev log) System.out.println("Result: " + cmpResult.getStatus().name());
 
-        reportingService.addReport(sub.getStudentId(), cmpResult, enforcer.getError(), normMode);
+        reportingService.addReport(sub.getId(), sub.getStudentId(), cmpResult, enforcer.getError(), normMode);
     }
 
     // utility

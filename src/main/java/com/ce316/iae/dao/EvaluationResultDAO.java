@@ -59,9 +59,11 @@ public class EvaluationResultDAO {
     }
 
     public List<StudentReport> findAll() throws SQLException {
-        String sql = "SELECT id, student_submission_id, status, actual_output, expected_output, " +
-                     "diff_lines, error_message, normalization_mode, timestamp " +
-                     "FROM EVALUATION_RESULT ORDER BY id";
+        String sql = "SELECT er.id, er.student_submission_id, ss.student_id, er.status, er.actual_output, " +
+                     "er.expected_output, er.diff_lines, er.error_message, er.normalization_mode, er.timestamp " +
+                     "FROM EVALUATION_RESULT er " +
+                     "LEFT JOIN STUDENT_SUBMISSION ss ON ss.id = er.student_submission_id " +
+                     "ORDER BY er.id";
         List<StudentReport> out = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -70,6 +72,7 @@ public class EvaluationResultDAO {
                 r.setId(rs.getInt("id"));
                 int subId = rs.getInt("student_submission_id");
                 r.setStudentSubmissionId(rs.wasNull() ? null : subId);
+                r.setStudentId(rs.getString("student_id"));
                 r.setStatus(ComparisonStatus.valueOf(rs.getString("status")));
                 r.setActualOutput(rs.getString("actual_output"));
                 r.setExpectedOutput(rs.getString("expected_output"));
