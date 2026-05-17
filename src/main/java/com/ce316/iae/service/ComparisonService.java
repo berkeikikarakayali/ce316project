@@ -43,7 +43,9 @@ public class ComparisonService {
     }
 
     private String normalize(String text, NormalizationMode mode) {
-        String result = text.replace("\r\n", "\n");
+        // strip UTF-8 BOM
+        String result = text.startsWith("\uFEFF") ? text.substring(1) : text;
+        result = result.replace("\r\n", "\n");
         if (mode == NormalizationMode.STRICT) {
             return result;
         }
