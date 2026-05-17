@@ -13,8 +13,7 @@ import java.util.List;
 /*
 **************************************************************************************
 IMPORTANT NOTE
-
-THIS CLASS HAS SO MANY CONNECTIONS BETWEEN OTHER MODULES SO IT HAS MANY PLACEHOLDERS ERRORS COMING FROM THERE PLEASE IGNORE FOR NOW
+all console lines are for developer it self. this engine does not engage with GUI
 **************************************************************************************
 */
 
@@ -54,19 +53,19 @@ public class Executioner {
                            int    runTimeout,
                            String normMode) {
 
-        System.out.println("Execution Engine started: " + submissions.size() + " student(s)\n");
+        // (dev log) System.out.println("execution engine started: " + submissions.size() + " student(s)\n");
 
         for (Submission sub : submissions) {
-            System.out.println("Processing: " + sub.getStudentId());
+            // (dev log) System.out.println("Processing: " + sub.getStudentId());
             try {
                 processSingle(sub, expectedOutput, runArgs, compileTimeout, runTimeout, normMode);
             } catch (Exception e) {
-                System.err.println("[ERROR] " + sub.getStudentId() + ": " + e.getMessage());
+                // (dev log) System.err.println("[ERROR] " + sub.getStudentId() + ": " + e.getMessage());
                 reportingService.addReport(sub.getStudentId(), "ERROR", "", e.getMessage(), normMode);
             }
         }
 
-        System.out.println("\n=== Execution Engine finished ===");
+        // (dev log) System.out.println("\nExecution Engine finished");
     }
 
     // proccessng single student
@@ -87,31 +86,31 @@ public class Executioner {
                     sub.getExtractedFolderPath()
             );
 
-            System.out.println("  Compiling: " + String.join(" ", compileCmd));
+            // (dev log) System.out.println("Compiling: " + String.join(" ", compileCmd));
             enforcer.execute(compileCmd, sub.getExtractedFolderPath(), compileTimeout);
 
             if (enforcer.getExitCode() == -1 && !enforcer.didTimeout()) {
                 String msg = buildMissingToolMessage(config.getCompilerPath(), enforcer.getError());
-                System.out.println("  [ERROR] " + msg);
+                // (dev log) System.out.println("err" + msg);
                 reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
                 return;
             }
 
             if (enforcer.didTimeout()) {
-                System.out.println("  [TIMEOUT] Compilation timed out.");
+                // (dev log) System.out.println("Compilation timed out.");
                 reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", "Compilation timed out.", normMode);
                 return;
             }
 
             if (enforcer.getExitCode() != 0) {
-                System.out.println("  [COMPILE_ERROR] " + enforcer.getError().trim());
+                // (dev log) System.out.println("compile err " + enforcer.getError().trim());
                 reportingService.addReport(sub.getStudentId(), "COMPILE_ERROR", "", enforcer.getError(), normMode);
                 return;
             }
 
-            System.out.println("  Compilation successful.");
+            // (dev log) System.out.println("Compilation successful.");
         } else {
-            System.out.println("  No compilation step (interpreted language).");
+            // (dev log) System.out.println("No compilation step (interpreted language).");
         }
 
         //running
@@ -121,19 +120,19 @@ public class Executioner {
                 runArgs
         );
 
-        System.out.println("  Running: " + String.join(" ", runCmd));
+        // (dev log) System.out.println("Running: " + String.join(" ", runCmd));
         enforcer.execute(runCmd, sub.getExtractedFolderPath(), runTimeout);
 
         if (enforcer.getExitCode() == -1 && !enforcer.didTimeout()) {
             String toolName = runCmd.isEmpty() ? "?" : runCmd.get(0);
             String msg = buildMissingToolMessage(toolName, enforcer.getError());
-            System.out.println("  [ERROR] " + msg);
+            // (dev log) System.out.println("err " + msg);
             reportingService.addReport(sub.getStudentId(), "ERROR", "", msg, normMode);
             return;
         }
 
         if (enforcer.didTimeout()) {
-            System.out.println("  [TIMEOUT] Execution timed out.");
+            // (dev log) System.out.println("Execution timed out.");
             reportingService.addReport(sub.getStudentId(), "TIMEOUT", "", "Execution timed out.", normMode);
             return;
         }
@@ -141,7 +140,7 @@ public class Executioner {
         if (enforcer.getExitCode() != 0) {
             String crashMsg = "Program crashed (exit code " + enforcer.getExitCode() + "). "
                     + enforcer.getError().trim();
-            System.out.println("  [CRASH→FAIL] " + crashMsg);
+            // (dev log) System.out.println("[CRASH→FAIL] " + crashMsg);
             reportingService.addReport(sub.getStudentId(), "FAIL",
                     enforcer.getOutput(), crashMsg, normMode);
             return;
@@ -149,10 +148,10 @@ public class Executioner {
 
         // compare
         String actualOutput = enforcer.getOutput();
-        System.out.println("  Output: " + actualOutput.trim());
+        // (dev log) System.out.println("Output: " + actualOutput.trim());
 
         ComparisonResult cmpResult = comparisonService.compare(actualOutput, expectedOutput, normMode);
-        System.out.println("  Result: " + cmpResult.getStatus().name());
+        // (dev log) System.out.println("Result: " + cmpResult.getStatus().name());
 
         reportingService.addReport(sub.getStudentId(), cmpResult, enforcer.getError(), normMode);
     }
