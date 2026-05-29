@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,15 +29,12 @@ public class EvaluationResultDAO {
         connection.setAutoCommit(false);
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (StudentReport r : reports) {
-                if (r.getStudentSubmissionId() != null) {
-                    ps.setInt(1, r.getStudentSubmissionId());
-                } else {
-                    ps.setNull(1, Types.INTEGER);
+                if (r.getStudentSubmissionId() == null) {
+                    throw new SQLException(
+                        "student_submission_id is null for student '" + r.getStudentId()
+                        + "' — submissions must be persisted before saving evaluation results");
                 }
-                //temp testing delete when extra testing or keep it for memories idk
-                System.out.println("STATUS = " + r.getStatus());
-                System.out.println("TIMESTAMP = " + r.getTimestamp());
-                System.out.println("SUBMISSION ID = " + r.getStudentSubmissionId());
+                ps.setInt(1, r.getStudentSubmissionId());
 
                 ps.setString(2, r.getStatus().name());
                 ps.setString(3, r.getActualOutput());
