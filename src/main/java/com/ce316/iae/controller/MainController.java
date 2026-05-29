@@ -97,7 +97,11 @@ public class MainController {
             "/images/help2.png",
             "/images/help3.png",
             "/images/help4.png",
-            "/images/help5.png"
+            "/images/help5.png",
+            "/images/help6.png",
+            "/images/help7.png",
+            "/images/help8.png",
+            "/images/help9.png"
     };
 
     @FXML private TabPane tabPane;
@@ -173,8 +177,8 @@ public class MainController {
 
         ImageView imageView = new ImageView(image);
 
-        imageView.setFitWidth(500);
-        imageView.setFitHeight(250);
+        imageView.setFitWidth(1000);
+        imageView.setFitHeight(500);
         imageView.setPreserveRatio(true);
 
         // buttons
@@ -233,7 +237,7 @@ public class MainController {
                 buttonBox
         );
 
-        Scene scene = new Scene(root, 700, 500);
+        Scene scene = new Scene(root, 800, 650);
 
         helpStage.setTitle("Help");
         helpStage.setScene(scene);
