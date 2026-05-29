@@ -93,15 +93,15 @@ public class MainController {
     private int currentImageIndex = 0;
 
     private final String[] helpImages = {
-            "/images/help1.png",
-            "/images/help2.png",
-            "/images/help3.png",
-            "/images/help4.png",
-            "/images/help5.png",
-            "/images/help6.png",
-            "/images/help7.png",
-            "/images/help8.png",
-            "/images/help9.png"
+            "/images_2/help1.png",
+            "/images_2/help2.png",
+            "/images_2/help3.png",
+            "/images_2/help4.png",
+            "/images_2/help5.png",
+            "/images_2/help6.png",
+            "/images_2/help7.png",
+            "/images_2/help8.png",
+            "/images_2/help9.png"
     };
 
     @FXML private TabPane tabPane;
