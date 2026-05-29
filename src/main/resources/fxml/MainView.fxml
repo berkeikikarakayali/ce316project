@@ -15,6 +15,9 @@
                     <SeparatorMenuItem/>
                     <MenuItem mnemonicParsing="false" onAction="#onSaveProject" text="Save Project"/>
                     <SeparatorMenuItem/>
+                    <MenuItem mnemonicParsing="false" onAction="#onImportConfigurations" text="Import Configurations…"/>
+                    <MenuItem mnemonicParsing="false" onAction="#onExportConfigurations" text="Export Configurations…"/>
+                    <SeparatorMenuItem/>
                     <MenuItem mnemonicParsing="false" onAction="#onExit" text="Exit"/>
                 </Menu>
             </MenuBar>

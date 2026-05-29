@@ -7,6 +7,7 @@ import com.ce316.iae.dao.StudentSubmissionDAO;
 import com.ce316.iae.db.DatabaseService;
 import com.ce316.iae.engine.Executioner;
 import com.ce316.iae.file.FileManager;
+import com.ce316.iae.model.ComparisonStatus;
 import com.ce316.iae.model.LanguageConfig;
 import com.ce316.iae.model.NormalizationMode;
 import com.ce316.iae.model.Project;
@@ -14,7 +15,11 @@ import com.ce316.iae.model.StudentReport;
 import com.ce316.iae.model.Submission;
 import com.ce316.iae.service.ComparisonService;
 import com.ce316.iae.service.ConfigurationService;
+import com.ce316.iae.service.ImportExportService;
+import com.ce316.iae.service.ImportMode;
+import com.ce316.iae.service.ImportResult;
 import com.ce316.iae.service.ReportingService;
+import com.ce316.iae.service.SkippedEntry;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -146,6 +151,14 @@ public class MainController {
         });
         resultsTableView.getColumns().setAll(colStudent, colStatus, colNorm, colTs, colErr, colPrev);
         resultsTableView.setItems(resultsItems);
+        resultsTableView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                StudentReport selected = resultsTableView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    showStudentDetailDialog(selected);
+                }
+            }
+        });
 
         refreshUiEnabledState();
     }
@@ -686,6 +699,166 @@ public class MainController {
             }
         }
         return out;
+    }
+
+    @FXML
+    private void onImportConfigurations() {
+        if (!databaseService.isOpen()) {
+            alertError("Import", "Open a project first.");
+            return;
+        }
+        Alert modeAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        modeAlert.setTitle("Import mode");
+        modeAlert.setHeaderText("How should existing configurations be handled?");
+        ButtonType mergeBtn = new ButtonType("Merge (keep existing)");
+        ButtonType replaceBtn = new ButtonType("Replace all");
+        modeAlert.getButtonTypes().setAll(mergeBtn, replaceBtn, ButtonType.CANCEL);
+        Optional<ButtonType> modeChoice = modeAlert.showAndWait();
+        if (modeChoice.isEmpty() || modeChoice.get() == ButtonType.CANCEL) {
+            return;
+        }
+        ImportMode mode = modeChoice.get() == replaceBtn ? ImportMode.REPLACE : ImportMode.MERGE;
+
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Import configurations");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON config", "*.json"));
+        File f = fc.showOpenDialog(primaryStage);
+        if (f == null) {
+            return;
+        }
+        try {
+            ImportResult result = new ImportExportService(configurationService).importFromFile(f.toPath(), mode);
+            if (!result.isSuccess()) {
+                alertError("Import failed", result.getErrorMessage());
+                return;
+            }
+            refreshConfigurationListView();
+            refreshLanguageComboFromService();
+            persistEverything();
+
+            StringBuilder msg = new StringBuilder();
+            msg.append("Imported ").append(result.getImportedConfigs().size()).append(" configuration(s).");
+            if (!result.getSkippedEntries().isEmpty()) {
+                msg.append("\n\nSkipped ").append(result.getSkippedEntries().size())
+                   .append(" (compiler not found on this machine):");
+                for (SkippedEntry s : result.getSkippedEntries()) {
+                    msg.append("\n  • ").append(s.getConfig().getName()).append(": ").append(s.getReason());
+                }
+            }
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Import complete");
+            info.setHeaderText(null);
+            info.setContentText(msg.toString());
+            info.showAndWait();
+        } catch (Exception ex) {
+            alertError("Import", ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onExportConfigurations() {
+        if (!databaseService.isOpen()) {
+            alertError("Export", "Open a project first.");
+            return;
+        }
+        if (configurationService == null || configurationService.listAll().isEmpty()) {
+            alertError("Export", "No configurations to export. Add at least one first.");
+            return;
+        }
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Export configurations");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON config", "*.json"));
+        fc.setInitialFileName("configurations.json");
+        File f = fc.showSaveDialog(primaryStage);
+        if (f == null) {
+            return;
+        }
+        try {
+            new ImportExportService(configurationService).exportToFile(f.toPath());
+            int count = configurationService.listAll().size();
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Export complete");
+            info.setHeaderText(null);
+            info.setContentText("Exported " + count + " configuration(s) to:\n" + f.getAbsolutePath());
+            info.showAndWait();
+        } catch (Exception ex) {
+            alertError("Export", ex.getMessage());
+        }
+    }
+
+    private void showStudentDetailDialog(StudentReport report) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Detail — " + report.getStudentId());
+        dialog.setHeaderText("Status: " + (report.getStatus() != null ? report.getStatus().name() : "?")
+                + "   |   " + (report.getTimestamp() != null ? report.getTimestamp() : ""));
+
+        javafx.scene.control.TabPane tabs = new javafx.scene.control.TabPane();
+        tabs.setTabClosingPolicy(javafx.scene.control.TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabs.setPrefWidth(700);
+        tabs.setPrefHeight(440);
+
+        tabs.getTabs().add(makeDetailTab("Actual Output", report.getActualOutput()));
+        tabs.getTabs().add(makeDetailTab("Expected Output", report.getExpectedOutput()));
+        tabs.getTabs().add(makeDetailTab("Diff", buildDiffText(report)));
+        tabs.getTabs().add(makeDetailTab("Error / Compiler Log", report.getErrorMessage()));
+
+        // Open on the most relevant tab based on status
+        ComparisonStatus status = report.getStatus();
+        if (status == ComparisonStatus.COMPILE_ERROR
+                || status == ComparisonStatus.TIMEOUT
+                || status == ComparisonStatus.ERROR) {
+            tabs.getSelectionModel().select(3); // Error / Compiler Log
+        } else if (status == ComparisonStatus.FAIL) {
+            tabs.getSelectionModel().select(2); // Diff
+        }
+
+        dialog.getDialogPane().setContent(tabs);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
+    }
+
+    private static String buildDiffText(StudentReport report) {
+        ComparisonStatus status = report.getStatus();
+        if (status == null) return "(no status data)";
+        switch (status) {
+            case COMPILE_ERROR: return "(no comparison — compilation failed)";
+            case TIMEOUT:       return "(no comparison — process timed out)";
+            case ERROR:         return "(no comparison — an error prevented execution)";
+            case PASS:          return "(outputs are identical — PASS)";
+            default: break;
+        }
+        // FAIL: use stored diff lines if available
+        List<String> lines = report.getDiffLines();
+        if (lines != null && !lines.isEmpty()) {
+            return String.join("\n", lines);
+        }
+        // Fallback: recompute diff from actual vs expected stored in the report
+        String actual = report.getActualOutput();
+        String expected = report.getExpectedOutput();
+        if (actual == null || expected == null) {
+            return "(diff data not available)";
+        }
+        String[] actualLines   = actual.replace("\r\n", "\n").split("\n", -1);
+        String[] expectedLines = expected.replace("\r\n", "\n").split("\n", -1);
+        StringBuilder sb = new StringBuilder();
+        int maxLen = Math.max(actualLines.length, expectedLines.length);
+        for (int i = 0; i < maxLen; i++) {
+            String a = i < actualLines.length   ? actualLines[i]   : "<missing>";
+            String e = i < expectedLines.length ? expectedLines[i] : "<missing>";
+            if (!a.equals(e)) {
+                sb.append("line ").append(i + 1)
+                  .append(": expected [").append(e).append("] got [").append(a).append("]\n");
+            }
+        }
+        return sb.length() > 0 ? sb.toString().trim() : "(no line differences found)";
+    }
+
+    private static Tab makeDetailTab(String title, String content) {
+        javafx.scene.control.TextArea area = new javafx.scene.control.TextArea(content != null ? content : "");
+        area.setEditable(false);
+        area.setWrapText(true);
+        area.setFont(javafx.scene.text.Font.font("Monospaced", 12));
+        return new Tab(title, area);
     }
 
     private static void alertError(String title, String message) {
