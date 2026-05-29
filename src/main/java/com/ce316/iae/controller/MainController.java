@@ -45,6 +45,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -117,6 +118,43 @@ public class MainController {
     @FXML private Label assignmentHintLabel;
     @FXML private Label resultsSummaryLabel;
     @FXML private TableView<StudentReport> resultsTableView;
+
+
+    @FXML
+    private void onGreenHover(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #388E3C; -fx-text-fill: white; -fx-cursor: hand;");
+    }
+
+    @FXML
+    private void onGreenExit(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+    }
+
+    @FXML
+    private void onBlueHover(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #1976D2; -fx-text-fill: white; -fx-cursor: hand;");
+    }
+
+    @FXML
+    private void onBlueExit(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #2196F3; -fx-text-fill: white; -fx-cursor: hand;");
+    }
+
+    @FXML
+    private void onRedHover(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-cursor: hand;");
+    }
+
+    @FXML
+    private void onRedExit(MouseEvent e) {
+        ((Button)e.getSource()).setStyle(
+                "-fx-background-color: #F44336; -fx-text-fill: white; -fx-cursor: hand;");
+    }
     @FXML
     private void onHelp() {
 
