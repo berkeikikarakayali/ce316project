@@ -44,9 +44,38 @@
                     </padding>
                     <Label wrapText="true" text="Create, edit, or remove language configurations used by assignments (Requirement 4)."/>
                     <HBox spacing="8.0">
-                        <Button mnemonicParsing="false" onAction="#onAddConfiguration" text="Add"/>
-                        <Button mnemonicParsing="false" onAction="#onEditConfiguration" text="Edit"/>
-                        <Button mnemonicParsing="false" onAction="#onDeleteConfiguration" text="Remove"/>
+                        <Button mnemonicParsing="false"
+                                onAction="#onAddConfiguration"
+                                text="Add"
+                                style="
+            -fx-background-color: #4CAF50;
+            -fx-text-fill: white;
+            -fx-cursor: hand;
+        "
+                                onMouseEntered="#onGreenHover"
+                                onMouseExited="#onGreenExit"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onEditConfiguration"
+                                text="Edit"
+                                style="
+            -fx-background-color: #2196F3;
+            -fx-text-fill: white;
+            -fx-cursor: hand;
+        "
+                                onMouseEntered="#onBlueHover"
+                                onMouseExited="#onBlueExit"/>
+
+                        <Button mnemonicParsing="false"
+                                onAction="#onDeleteConfiguration"
+                                text="Remove"
+                                style="
+            -fx-background-color: #F44336;
+            -fx-text-fill: white;
+            -fx-cursor: hand;
+        "
+                                onMouseEntered="#onRedHover"
+                                onMouseExited="#onRedExit"/>
                     </HBox>
                     <ListView fx:id="configurationListView" prefHeight="420.0" VBox.vgrow="ALWAYS"/>
                 </VBox>
