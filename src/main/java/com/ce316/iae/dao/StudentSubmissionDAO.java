@@ -30,40 +30,12 @@ public class StudentSubmissionDAO {
                 ps.setString(3, s.getExtractedFolderPath());
                 ps.setString(4, s.getMainSourceFile());
                 ps.executeUpdate();
-
-                //test
-                System.out.println("Inserted submission: " + s.getStudentId());
-
-/*
-commented for test
-                try (ResultSet keys = ps.getGeneratedKeys()) {
+                try (Statement stmt = connection.createStatement();
+                     ResultSet keys = stmt.executeQuery("SELECT last_insert_rowid()")) {
                     if (keys.next()) {
                         s.setId(keys.getInt(1));
                     }
                 }
-//fix test1 failed
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        int id = keys.getInt(1);
-                        System.out.println("generated id = " + id);
-                        s.setId(id);
-                    } else {
-                        System.out.println("no generated id!");
-                    }
-                }
- */
-                //fix test2 success
-                try (Statement stmt = connection.createStatement();
-                     ResultSet rs = stmt.executeQuery("SELECT last_insert_rowid()")) {
-
-                    if (rs.next()) {
-                        int id = rs.getInt(1);
-                        System.out.println("GENERATED ID = " + id);
-                        s.setId(id);
-                    }
-                }
-
-
             }
             connection.commit();
         } catch (SQLException e) {

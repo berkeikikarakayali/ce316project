@@ -53,7 +53,8 @@ public class ConfigurationDAO {
             ps.setString(4, JsonArrayCodec.encode(config.getCompileArgs()));
             ps.setString(5, JsonArrayCodec.encode(config.getRunArgs()));
             ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
+            try (Statement stmt = connection.createStatement();
+                 ResultSet keys = stmt.executeQuery("SELECT last_insert_rowid()")) {
                 if (keys.next()) {
                     int id = keys.getInt(1);
                     config.setId(id);
