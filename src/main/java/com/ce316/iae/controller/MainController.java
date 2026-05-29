@@ -208,8 +208,12 @@ public class MainController {
     }
 
     private void refreshConfigurationListView() {
-        configurationListView.setItems(FXCollections.observableArrayList(
-                configurationService.listAll().stream().map(LanguageConfig::getName).toList()));
+        List<String> items = new java.util.ArrayList<>();
+        for (LanguageConfig lc : configurationService.listAll()) {
+            String display = lc.getName() + "  (" + lc.getFileExtension() + ")";
+            items.add(display);
+        }
+        configurationListView.setItems(FXCollections.observableArrayList(items));
     }
 
     private void refreshLanguageComboFromService() {
@@ -550,7 +554,7 @@ public class MainController {
             alertError("Configuration", "Open a project first.");
             return;
         }
-        String name = configurationListView.getSelectionModel().getSelectedItem();
+        String name = toConfigName(configurationListView.getSelectionModel().getSelectedItem());
         if (name == null) {
             alertError("Configuration", "Select a configuration.");
             return;
@@ -577,7 +581,7 @@ public class MainController {
             alertError("Configuration", "Open a project first.");
             return;
         }
-        String name = configurationListView.getSelectionModel().getSelectedItem();
+        String name = toConfigName(configurationListView.getSelectionModel().getSelectedItem());
         if (name == null) {
             alertError("Configuration", "Select a configuration.");
             return;
@@ -677,6 +681,17 @@ public class MainController {
         });
 
         return dialog.showAndWait();
+    }
+
+    private static String toConfigName(String displayName) {
+        if (displayName == null) {
+            return null;
+        }
+        int idx = displayName.indexOf("  (");
+        if (idx >= 0) {
+            return displayName.substring(0, idx);
+        }
+        return displayName;
     }
 
     private static String blankToNull(String s) {
