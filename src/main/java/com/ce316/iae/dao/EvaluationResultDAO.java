@@ -35,6 +35,11 @@ public class EvaluationResultDAO {
                 } else {
                     ps.setNull(1, Types.INTEGER);
                 }
+                //temp testing delete when extra testing or keep it for memories idk
+                System.out.println("STATUS = " + r.getStatus());
+                System.out.println("TIMESTAMP = " + r.getTimestamp());
+                System.out.println("SUBMISSION ID = " + r.getStudentSubmissionId());
+
                 ps.setString(2, r.getStatus().name());
                 ps.setString(3, r.getActualOutput());
                 ps.setString(4, r.getExpectedOutput());
