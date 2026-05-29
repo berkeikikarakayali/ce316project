@@ -20,6 +20,11 @@
                     <SeparatorMenuItem/>
                     <MenuItem mnemonicParsing="false" onAction="#onExit" text="Exit"/>
                 </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <MenuItem mnemonicParsing="false"
+                              onAction="#onHelp"
+                              text="? Help"/>
+                </Menu>
             </MenuBar>
             <HBox spacing="12.0" alignment="CENTER_LEFT">
                 <padding>
