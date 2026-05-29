@@ -204,8 +204,8 @@ public class MainController {
 
             currentImageIndex--;
 
-            if (currentImageIndex <= helpImages.length) {
-                currentImageIndex = 0;
+            if (currentImageIndex < 0) {
+                currentImageIndex = helpImages.length - 1;
             }
 
             imageView.setImage(

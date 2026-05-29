@@ -30,7 +30,8 @@ public class StudentSubmissionDAO {
                 ps.setString(3, s.getExtractedFolderPath());
                 ps.setString(4, s.getMainSourceFile());
                 ps.executeUpdate();
-                try (ResultSet keys = ps.getGeneratedKeys()) {
+                try (Statement stmt = connection.createStatement();
+                     ResultSet keys = stmt.executeQuery("SELECT last_insert_rowid()")) {
                     if (keys.next()) {
                         s.setId(keys.getInt(1));
                     }

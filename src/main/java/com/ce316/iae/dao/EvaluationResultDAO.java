@@ -44,7 +44,8 @@ public class EvaluationResultDAO {
                 ps.setString(7, r.getNormalizationMode() != null ? r.getNormalizationMode().name() : null);
                 ps.setString(8, r.getTimestamp());
                 ps.executeUpdate();
-                try (ResultSet keys = ps.getGeneratedKeys()) {
+                try (Statement stmt = connection.createStatement();
+                     ResultSet keys = stmt.executeQuery("SELECT last_insert_rowid()")) {
                     if (keys.next()) {
                         r.setId(keys.getInt(1));
                     }
